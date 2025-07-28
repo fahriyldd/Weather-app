@@ -1,0 +1,52 @@
+/* Tüm sayfayı ortala */
+body {
+  font-family: Arial, sans-serif;
+  background: #e0f7fa;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+/* Input ve butonları biraz düzenle */
+#cityInput {
+  padding: 10px;
+  width: 250px;
+  margin: 10px 0;
+  border: 1px solid #999;
+  border-radius: 5px;
+}
+
+#getWeather {
+  padding: 10px 20px;
+  background-color: #0288d1;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#getWeather:hover {
+  background-color: #0277bd;
+}
+
+/* Sonuç kutusu */
+#weatherResult {
+  margin-top: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* weather-list div’inin genel konumu */
+.weather-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
