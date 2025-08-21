@@ -1,19 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather</title>
+    <meta name="description" content="Hava durumu bilgilerini öğrenmek için şehir adı girin">
+    <meta name="keywords" content="hava durumu, weather, API, OpenWeatherMap">
+    <meta name="author" content="Fahri Yıldız">
+    <title>Hava Durumu Uygulaması</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <div id="weather-list">
- <input type="text" id="cityInput" placeholder="Şehir adı girin">
-<button id="getWeather">Hava Durumu Getir</button>
-<div id="weatherResult"></div>
-
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-cloud-sun"></i> Hava Durumu</h1>
+            <p>Şehir adını girerek güncel hava durumu bilgilerini öğrenin</p>
+        </header>
+        
+        <main class="main-content">
+            <div class="search-section">
+                <div class="input-group">
+                    <input type="text" id="cityInput" placeholder="Şehir adı girin..." autocomplete="off">
+                    <button id="getWeather" type="button">
+                        <i class="fas fa-search"></i>
+                        <span>Hava Durumu Getir</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="weatherResult" class="weather-result"></div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 Hava Durumu Uygulaması. OpenWeatherMap API kullanılarak geliştirilmiştir.</p>
+        </footer>
     </div>
-   
+    
     <script src="script.js"></script>
 </body>
 </html>
