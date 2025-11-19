@@ -5,7 +5,7 @@ const weatherResult = document.getElementById("weatherResult");
 
 // API anahtarı (OpenWeatherMap'ten alınan)
 const API_KEY = "a5e7fa346493b81440c0d489dc461cc0";
-const API_BASE_URL = "https://api.openweathermap.org/data/2.5/weather";
+const API_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall";
 
 // Event listeners
 getWeatherBtn.addEventListener("click", handleWeatherRequest);
@@ -38,71 +38,67 @@ async function handleWeatherRequest() {
 
 // API'den hava durumu verisi çek
 async function fetchWeatherData(city) {
-    const url = `${API_BASE_URL}?q=${encodeURIComponent(city)}&appid=${API_KEY}&units=metric&lang=tr`;
-    
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-        if (response.status === 404) {
-            throw new Error("Şehir bulunamadı. Lütfen geçerli bir şehir adı girin.");
-        } else if (response.status === 401) {
-            throw new Error("API anahtarı geçersiz. Lütfen geliştirici ile iletişime geçin.");
-        } else {
-            throw new Error("Hava durumu bilgisi alınamadı. Lütfen daha sonra tekrar deneyin.");
-        }
+    // 1) Şehir adından koordinat al
+    const geoUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${API_KEY}`;
+
+    const geoRes = await fetch(geoUrl);
+
+    if (!geoRes.ok) {
+        throw new Error("Konum bilgisi alınamadı.");
     }
-    
-    return await response.json();
+
+    const geoData = await geoRes.json();
+
+    if (geoData.length === 0) {
+        throw new Error("Şehir bulunamadı.");
+    }
+
+    const { lat, lon, name, country } = geoData[0];
+
+    // 2) One Call API'den 7 günlük hava durumu al
+    const url = `${API_BASE_URL}?lat=${lat}&lon=${lon}&exclude=hourly,minutely,current&units=metric&lang=tr&appid=${API_KEY}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error("Hava durumu bilgisi alınamadı.");
+    }
+
+    const weatherData = await response.json();
+
+    return {
+        city: name,
+        country,
+        daily: weatherData.daily
+    };
 }
+
 
 // Hava durumu verilerini görüntüle
 function displayWeather(data) {
-    const weather = data.weather[0];
-    const main = data.main;
-    const wind = data.wind;
-    const sys = data.sys;
-    
-    // Hava durumu ikonunu belirle
-    const weatherIcon = getWeatherIcon(weather.id);
-    
-    // Hava durumu kartını oluştur
-    const weatherHTML = `
-        <div class="weather-card">
-            <h2>
-                <i class="fas fa-map-marker-alt"></i>
-                ${data.name}, ${sys.country}
-            </h2>
-            
-            <div class="weather-info">
-                <p>
-                    <i class="fas fa-thermometer-half"></i>
-                    Sıcaklık: ${Math.round(main.temp)}°C
-                </p>
-                <p>
-                    <i class="fas fa-thermometer-quarter"></i>
-                    Hissedilen: ${Math.round(main.feels_like)}°C
-                </p>
-                <p>
-                    <i class="fas fa-cloud"></i>
-                    Hava Durumu: ${weather.description}
-                </p>
-                <p>
-                    <i class="fas fa-tint"></i>
-                    Nem: ${main.humidity}%
-                </p>
-                <p>
-                    <i class="fas fa-wind"></i>
-                    Rüzgar: ${Math.round(wind.speed * 3.6)} km/h
-                </p>
-                <p>
-                    <i class="fas fa-compress-arrows-alt"></i>
-                    Basınç: ${main.pressure} hPa
-                </p>
-            </div>
-        </div>
+    let html = `
+        <h2><i class="fas fa-map-marker-alt"></i> ${data.city}, ${data.country}</h2>
     `;
-    
-    weatherResult.innerHTML = weatherHTML;
+
+    data.daily.slice(0, 7).forEach(day => {
+        const date = new Date(day.dt * 1000).toLocaleDateString("tr-TR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long"
+        });
+
+        html += `
+            <div class="weather-card">
+                <h3>${date}</h3>
+                <p><i class="fas fa-cloud"></i> Hava: ${day.weather[0].description}</p>
+                <p><i class="fas fa-thermometer-half"></i> Gündüz: ${Math.round(day.temp.day)}°C</p>
+                <p><i class="fas fa-temperature-low"></i> Gece: ${Math.round(day.temp.night)}°C</p>
+                <p><i class="fas fa-tint"></i> Nem: ${day.humidity}%</p>
+                <p><i class="fas fa-wind"></i> Rüzgar: ${Math.round(day.wind_speed * 3.6)} km/h</p>
+            </div>
+        `;
+    });
+
+    weatherResult.innerHTML = html;
 }
 
 // Hava durumu ikonunu belirle
