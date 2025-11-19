@@ -7,12 +7,26 @@ const weatherResult = document.getElementById("weatherResult");
 const API_KEY = "a5e7fa346493b81440c0d489dc461cc0";
 
 // Event listeners
-getWeatherBtn.addEventListener("click", handleWeatherRequest);
-cityInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-        handleWeatherRequest();
-    }
-});
+if (getWeatherBtn) {
+    getWeatherBtn.addEventListener("click", handleWeatherRequest);
+}
+
+if (cityInput) {
+    cityInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            handleWeatherRequest();
+        }
+    });
+    // Sayfa yüklendiğinde focus
+    cityInput.focus();
+    
+    // Buton durumunu input'a göre ayarla
+    cityInput.addEventListener('input', () => {
+        if (getWeatherBtn) {
+            getWeatherBtn.disabled = !cityInput.value.trim();
+        }
+    });
+}
 
 // Ana hava durumu fonksiyonu
 async function handleWeatherRequest() {
@@ -37,7 +51,6 @@ async function handleWeatherRequest() {
 
 // API'den hava durumu verisi çek
 async function fetchWeatherData(city) {
-    // 5 Day Forecast API - çok daha basit
     const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=metric&lang=tr&appid=${API_KEY}`;
     
     const response = await fetch(url);
@@ -51,13 +64,14 @@ async function fetchWeatherData(city) {
 
     const data = await response.json();
 
-    // Her gün için bir veri al (örneğin 12:00 saatindeki)
+    // Her gün için bir veri al
     const dailyData = {};
     
     data.list.forEach(item => {
+        // Tarih anahtarı oluştur
         const date = new Date(item.dt * 1000).toLocaleDateString("tr-TR");
         
-        // Eğer bu günün verisi henüz kayıtlı değilse, ekle
+        // Eğer bu günün verisi henüz kayıtlı değilse ekle
         if (!dailyData[date]) {
             dailyData[date] = item;
         }
@@ -66,80 +80,115 @@ async function fetchWeatherData(city) {
     return {
         city: data.city.name,
         country: data.city.country,
-        daily: Object.values(dailyData).slice(0, 7)
+        daily: Object.values(dailyData).slice(0, 5) // Tasarım 5 sütun olduğu için 5 günle sınırladık
     };
 }
 
-// Hava durumu verilerini görüntüle
-function displayWeather(data) {
-    let html = `
-        <h2><i class="fas fa-map-marker-alt"></i> ${data.city}, ${data.country}</h2>
-    `;
+// OpenWeatherMap ikon kodunu FontAwesome ikonuna çevir
+function getWeatherIcon(code) {
+    const iconMap = {
+        '01d': 'fa-sun', '01n': 'fa-moon',
+        '02d': 'fa-cloud-sun', '02n': 'fa-cloud-moon',
+        '03d': 'fa-cloud', '03n': 'fa-cloud',
+        '04d': 'fa-cloud', '04n': 'fa-cloud',
+        '09d': 'fa-cloud-showers-heavy', '09n': 'fa-cloud-showers-heavy',
+        '10d': 'fa-cloud-rain', '10n': 'fa-cloud-rain',
+        '11d': 'fa-bolt', '11n': 'fa-bolt',
+        '13d': 'fa-snowflake', '13n': 'fa-snowflake',
+        '50d': 'fa-smog', '50n': 'fa-smog'
+    };
+    return iconMap[code] || 'fa-cloud';
+}
 
-    data.daily.forEach(day => {
-        const date = new Date(day.dt * 1000).toLocaleDateString("tr-TR", {
-            weekday: "long",
-            day: "numeric",
-            month: "long"
+// Hava durumu verilerini görüntüle (CSS ile uyumlu HTML yapısı)
+function displayWeather(data) {
+    const cityName = `${data.city}, ${data.country}`;
+    
+    // Grid yapısını oluşturacak kolonları hazırla
+    const columnsHTML = data.daily.map(day => {
+        // TARİH FORMATI GÜNCELLENDİ: "20 Mayıs Cumartesi" formatı
+        const date = new Date(day.dt * 1000).toLocaleDateString("tr-TR", { 
+            day: "numeric", 
+            month: "long", 
+            weekday: "long" 
         });
 
-        html += `
-            <div class="weather-card">
-                <h3>${date}</h3>
-                <p><i class="fas fa-cloud"></i> Hava: ${day.weather[0].description}</p>
-                <p><i class="fas fa-thermometer-half"></i> Sıcaklık: ${Math.round(day.main.temp)}°C</p>
-                <p><i class="fas fa-temperature-low"></i> Hissedilen: ${Math.round(day.main.feels_like)}°C</p>
-                <p><i class="fas fa-tint"></i> Nem: ${day.main.humidity}%</p>
-                <p><i class="fas fa-wind"></i> Rüzgar: ${Math.round(day.wind.speed * 3.6)} km/h</p>
+        const iconClass = getWeatherIcon(day.weather[0].icon);
+        const temp = Math.round(day.main.temp) + '°';
+        const feelsLike = Math.round(day.main.feels_like) + '°';
+        const humidity = day.main.humidity + '%';
+        const wind = Math.round(day.wind.speed * 3.6) + ' km'; // m/s to km/h
+
+        return `
+            <div class="day-column">
+                <div class="day-header">
+                    <span class="day-name" style="font-size: 0.95rem;">${date}</span>
+                </div>
+                <div class="day-icon">
+                    <i class="fa-solid ${iconClass}"></i>
+                </div>
+                <div class="temp-main">${temp}</div>
+                <div class="details-stack">
+                    <div class="detail-item" title="Hissedilen">
+                        <i class="fa-solid fa-temperature-arrow-up"></i>
+                        <span>${feelsLike}</span>
+                    </div>
+                    <div class="detail-item" title="Nem">
+                        <i class="fa-solid fa-droplet"></i>
+                        <span>${humidity}</span>
+                    </div>
+                    <div class="detail-item" title="Rüzgar">
+                        <i class="fa-solid fa-wind"></i>
+                        <span>${wind}</span>
+                    </div>
+                </div>
             </div>
         `;
-    });
+    }).join('');
 
-    weatherResult.innerHTML = html;
+    // Sonucu .forecast-container içine koy
+    weatherResult.innerHTML = `
+        <h2 class="city-title">
+            <i class="fa-solid fa-location-dot" style="color: var(--primary-color)"></i> ${cityName}
+        </h2>
+        <div class="forecast-container">
+            ${columnsHTML}
+        </div>
+    `;
 }
 
 // Loading state'i göster
 function showLoading() {
-    weatherResult.innerHTML = '<div class="loading">Hava durumu bilgisi alınıyor...</div>';
-    getWeatherBtn.disabled = true;
-    getWeatherBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Yükleniyor...</span>';
+    weatherResult.innerHTML = `
+        <div class="loading">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+            <p style="margin-top: 1rem">Veriler alınıyor...</p>
+        </div>
+    `;
+    if (getWeatherBtn) {
+        getWeatherBtn.disabled = true;
+        getWeatherBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Yükleniyor...</span>';
+    }
 }
 
 // Hata mesajını göster
 function showError(message) {
-    weatherResult.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
+    weatherResult.innerHTML = `<div class="error-message"><i class="fa-solid fa-triangle-exclamation"></i> ${message}</div>`;
 }
 
 // Butonu reset et
 function resetButton() {
-    getWeatherBtn.disabled = false;
-    getWeatherBtn.innerHTML = '<i class="fas fa-search"></i><span>Hava Durumu Getir</span>';
+    if (getWeatherBtn) {
+        getWeatherBtn.disabled = false;
+        getWeatherBtn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> <span>Sorgula</span>';
+    }
 }
-
-// Sayfa yüklendiğinde
-document.addEventListener('DOMContentLoaded', () => {
-    cityInput.focus();
-    
-    cityInput.addEventListener('input', () => {
-        if (cityInput.value.trim()) {
-            getWeatherBtn.disabled = false;
-        } else {
-            getWeatherBtn.disabled = true;
-        }
-    });
-    
-    getWeatherBtn.disabled = true;
-});
 
 // Hata yakalama
 window.addEventListener('error', (e) => {
     console.error('Uygulama hatası:', e.error);
-    showError('Beklenmeyen bir hata oluştu.');
-    resetButton();
 });
 
 window.addEventListener('unhandledrejection', (e) => {
     console.error('Promise hatası:', e.reason);
-    showError('Ağ hatası oluştu. İnternet bağlantınızı kontrol edin.');
-    resetButton();
 });
