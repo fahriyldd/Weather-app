@@ -132,8 +132,8 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 ## 👨‍💻 Geliştirici
 
 **Fahri Yıldız**
-- GitHub: [@kullaniciadi](https://github.com/kullaniciadi)
-- LinkedIn: [Fahri Yıldız](https://linkedin.com/in/fahriyildiz)
+- GitHub: [@fahriyldd](https://github.com/fahriyldd)
+- LinkedIn: [Fahri Yıldız](https://linkedin.com/in/fahriyildiz)](https://www.linkedin.com/in/fahri-y%C4%B1ld%C4%B1z-)
 
 ## 🙏 Teşekkürler
 
@@ -145,8 +145,8 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 ## 📞 İletişim
 
 Proje hakkında sorularınız için:
-- Email: fahri@example.com
-- GitHub Issues: [Proje Issues](https://github.com/kullaniciadi/hava-durumu-uygulamasi/issues)
+- Email: fahri27790@gmail.com
+- GitHub Issues: https://github.com/fahriyldd
 
 ---
 
