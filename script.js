@@ -5,7 +5,7 @@ const weatherResult = document.getElementById("weatherResult");
 
 // API anahtarı (OpenWeatherMap'ten alınan)
 const API_KEY = "a5e7fa346493b81440c0d489dc461cc0";
-const API_BASE_URL = "https://api.openweathermap.org/data/3.0/onecall";
+const API_BASE_URL = "https://api.openweathermap.org/data/2.5/onecall";
 
 // Event listeners
 getWeatherBtn.addEventListener("click", handleWeatherRequest);
